@@ -1,0 +1,78 @@
+{
+    "configurations": [
+        {
+            "name": "test",
+            "policies": [
+				{
+                    "name": "InitialConfiguration.xml",
+                    "tokens": [
+                        {
+                            "xpath": "/AssignMessage/AssignVariable[Name='service_callout_domain']/Value",
+                            "value": "fhirsandbox-test.apigee.net"
+						},
+						{
+                            "xpath": "/AssignMessage/AssignVariable[Name='primaryResource']/Value",
+                            "value": ""
+                        }
+                    ]
+                }
+            ],
+            "proxies": [
+                
+            ],
+            "targets": [
+                
+            ]
+        },
+         {
+            "name": "dev",
+            "policies": [
+				{
+                    "name": "InitialConfiguration.xml",
+                    "tokens": [
+                        {
+                            "xpath": "/AssignMessage/AssignVariable[Name='service_callout_domain']/Value",
+                            "value": "fhirsandbox-dev.apigee.net"
+                        },
+						{
+                            "xpath": "/AssignMessage/AssignVariable[Name='primaryResource']/Value",
+                            "value": ""
+                        }
+                    ]
+                }
+
+            ],
+            "proxies": [
+                
+            ],
+            "targets": [
+                
+            ]
+        },
+		 {
+            "name": "prod",
+            "policies": [
+				{
+                    "name": "InitialConfiguration.xml",
+                    "tokens": [
+                        {
+                            "xpath": "/AssignMessage/AssignVariable[Name='service_callout_domain']/Value",
+                            "value": "fhirsandbox-prod.apigee.net"
+                        },
+						{
+                            "xpath": "/AssignMessage/AssignVariable[Name='primaryResource']/Value",
+                            "value": ""
+                        }
+                    ]
+                }
+
+            ],
+            "proxies": [
+                
+            ],
+            "targets": [
+                
+            ]
+        }
+    ]
+}

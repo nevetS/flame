@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<AccessControl async="false" continueOnError="false" enabled="true" name="AccessControl">
+    <DisplayName>AccessControl</DisplayName>
+    <Properties/>
+    <IPRules noRuleMatchAction="DENY">
+        <MatchRule action="ALLOW">
+            <SourceAddress mask="32">54.148.126.84</SourceAddress>
+          	<SourceAddress mask="32">192.168.60.17</SourceAddress>
+          	<SourceAddress mask="32">54.148.126.117</SourceAddress>
+          	<SourceAddress mask="32">192.168.35.24</SourceAddress>
+        </MatchRule>
+    </IPRules>
+</AccessControl>

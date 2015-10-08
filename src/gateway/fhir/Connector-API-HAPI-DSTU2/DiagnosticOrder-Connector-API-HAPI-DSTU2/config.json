@@ -1,0 +1,66 @@
+{
+    "configurations": [
+        {
+            "name": "test",
+            "policies": [
+                {
+                    "name": "InitialConfiguration.xml",
+                    "tokens": [
+                       {
+                            "xpath": "/AssignMessage/AssignVariable[Name='primaryResource']/Value",
+                            "value": "DiagnosticOrder"
+                        }
+                    ]
+                }
+            ],
+            "proxies": [
+                
+            ],
+            "targets": [
+                
+            ]
+        },
+         {
+            "name": "dev",
+            "policies": [
+				{
+                    "name": "InitialConfiguration.xml",
+                    "tokens": [
+                       {
+                            "xpath": "/AssignMessage/AssignVariable[Name='primaryResource']/Value",
+                            "value": "DiagnosticOrder"
+                        }
+                    ]
+                }
+
+            ],
+            "proxies": [
+                
+            ],
+            "targets": [
+                
+            ]
+        },
+		 {
+            "name": "prod",
+            "policies": [
+               {
+                    "name": "InitialConfiguration.xml",
+                    "tokens": [
+                       {
+                            "xpath": "/AssignMessage/AssignVariable[Name='primaryResource']/Value",
+                            "value": "DiagnosticOrder"
+                        }
+                    ]
+                }
+
+            ],
+            "proxies": [
+                
+            ],
+            "targets": [
+                
+            ]
+        }
+    ]
+}
