@@ -5,6 +5,7 @@ Overview
 [Flame](https://github.com/apigee/flame#Flame-definition) is a Health care API Exposure solution based on Apigee Edge platform. API Exposure is the essential block of any digital ecosystem needs, let it be application, data analysis and contextual content delivery through APIs. 
 
 The key differences between flame and any traditional API Exposure solutions
+
     * FHIR DSTU 2 API Compliant convering all 16 FHIR resources
     * Complete OAUTH 2.0 support for B2B and B2C scenarios
     * Developer Portal with API Documentation and Sandbox 
