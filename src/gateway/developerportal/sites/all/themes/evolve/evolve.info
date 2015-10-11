@@ -1,0 +1,110 @@
+name = Evolve
+description = "Evolve - Responsive Multi-Purpose Drupal Theme"
+core = 7.x
+base theme = drupalexp
+
+regions[content] = Content
+regions[top] = Top
+regions[call_us] = Call Us
+regions[socials] = Socials
+regions[socials_bottom] = Socials Bottom
+regions[logo] = Logo
+regions[devportal] = Devportal
+regions[user_login] = User Login
+regions[banner] = Banner
+regions[tagline] = Tagline
+regions[breadcrumb] = Breadcrumb
+regions[page_title] = Page Title
+regions[navigation] = Navigation
+regions[map] = Map
+regions[feature_first] = Feature First
+regions[feature_second] = Feature Second
+regions[feature_third] = Feature Third
+regions[feature_fourth] = Feature Fourth
+regions[feature_fivth] = Feature Fivth
+regions[feature_sixth] = Feature Sixth
+regions[feature_seventh] = Feature Seventh
+regions[feature_eighth] = Feature Eighth
+regions[latestworks] = Latest Works
+regions[testimonial] = Testimonial
+regions[copyright] = Copyright
+regions[right_sidebar] = Right sidebar
+regions[left_sidebar] = Left sidebar
+
+regions[community_left_sidebar] = Community Left Sidebar
+regions[community_centre_sidebar] = Community Centre Bar
+regions[community_right_sidebar] = Community Right Sidebar
+regions[community_all_post_left_sidebar] = Community All Post Left Sidebar
+regions[community_all_post_right_sidebar] = Community All Post Right Sidebar
+regions[app_gallery_content] = App Gallery Content
+regions[app_gallery_left_sidebar] = App Gallery Left Sidebar
+regions[app_gallery_right_sidebar] = App Gallery Right Sidebar
+
+regions[event_banner] = Event Banner
+regions[event_left_section] = Event Left Section
+regions[event_middle blank_section] = Event Middle Blank Section
+regions[event_right_section] = Event Right Section
+
+regions[clients] = Clients
+
+
+regions[content_bottom_second] = Content Bottom Second
+regions[content_bottom_third] = Content Bottom Third
+regions[parallax] = Parallax
+
+regions[content_top] = Content Top
+
+regions[bottom_first] = Bottom First
+regions[bottom_second] = Bottom Second
+regions[bottom_third] = Bottom Third
+regions[bottom_fourth] = Bottom Fourth
+regions[bottom_fifth] = Bottom Fifth
+regions[extra_bottom] = Extra Bottom
+regions[extra_bottom2] = Extra Bottom 2
+regions[extra_bottom3] = Extra Bottom 3
+regions[extra_bottom4] = Extra Bottom 4
+
+;Extra regions
+regions[user1] = User 1
+regions[user2] = User 2
+regions[user3] = User 3
+regions[user4] = User 4
+regions[user5] = User 5
+regions[user6] = User 6
+regions[user7] = User 7
+regions[user8] = User 8
+regions[user9] = User 9
+regions[user10] = User 10
+regions[user11] = User 11
+regions[user12] = User 12
+regions[user13] = User 13
+regions[user14] = User 14
+regions[user15] = User 15
+regions[user16] = User 16
+regions[user17] = User 17
+regions[user18] = User 18
+regions[user19] = User 19
+regions[user20] = User 20
+
+lessc[] = lessc/style.less
+lessc[] = lessc/style-rtl.less
+lessc[] = lessc/mixin.less
+lessc[] = lessc/topbar.less
+lessc[] = lessc/mainmenu.less
+lessc[] = lessc/breadcrumb.less
+lessc[] = lessc/footer.less
+lessc[] = lessc/portfolio.less
+lessc[] = lessc/blog.less
+lessc[] = lessc/pages.less
+lessc[] = lessc/testimonial.less
+lessc[] = lessc/general.less
+lessc[] = lessc/block.less
+lessc[] = lessc/bxslider.less
+lessc[] = lessc/shortcode.less
+lessc[] = lessc/quicksettings.less
+
+
+scripts[] = assets/scripts/evolve.js
+scripts[] = assets/scripts/user-apps.js
+
+stylesheets[all][] = assets/css/apigee-style.css

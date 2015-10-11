@@ -1,0 +1,618 @@
+<?php
+/**
+ * @file
+ *  Amadeus Smartdocs Customizations
+ *
+ */
+
+define('SMARTDOCS_PARENT_MENU', 'menu-docs-left-side-menu');
+define('SMARTDOCS_MENU_BLOCK_DELTA', 'amadeus_smartdocs-2');
+define('SMARTDOCS_TOP_RIGHT_DELTA', 'block--smartdocs-top-right');
+
+// Both Response and Example content is placed in response block.
+define('SMARTDOCS_RESPONSE_BLOCK_DELTA', 'block--smartdocs-response');
+
+
+/**
+ * Implements hook_menu()
+ */
+function amadeus_smartdocs_menu(){
+  $items = array();
+  $items['admin/config/smartdocs/amadeus_smartdocs_link'] = array(
+    'title' => t('SmartDocs Menu link Generation'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('amadeus_smartdocs_generate_api_docs_urls'),
+    'access arguments' => array('administer smartdocs content'),
+    'weight' => -100,
+  );
+
+  $items['admin/config/smartdocs/placeholder'] = array(
+    'title' => t('SmartDocs TIS Relationships'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('_amadeus_smartdocs_tis_view_redirect'),
+    'access arguments' => array('administer smartdocs content'),
+    'weight' => -100,
+  );
+
+  return $items;
+}
+
+/**
+ * Make visible in left hand side block
+ */
+function amadeus_smartdocs_context_default_contexts() {
+  $items = array();
+
+  // Arrange SmartDocs Left Hand Menu block using context module
+  $context = new stdClass();
+  $context->disabled = FALSE; /* Edit this to true to make a default context disabled initially */
+  $context->api_version = 3;
+  $context->name = 'docs_page_context';
+  $context->description = '(Please do not override this)';
+  $context->tag = '';
+  $context->conditions = array(
+    'path' => array(
+      'values' => array(),
+    ),
+  );
+
+  // Set path to API-Catalog
+  $landing_page = variable_get('smartdocs-landing-page', 0);
+  if ($landing_page) {
+    $context->conditions['path']['values'][$landing_page] = $landing_page;
+  }
+
+  $query = db_select('menu_links', 'ml');
+  $query->condition('menu_name', SMARTDOCS_PARENT_MENU);
+  $query->condition('hidden', 0);
+  $query->fields('ml', array('link_path'));
+  $result = $query->execute()->fetchCol();
+  foreach($result as $path){
+    $alias = drupal_get_path_alias($path);
+    $context->conditions['path']['values'][$alias] = $alias;
+  }
+  $context->reactions = array(
+    'block' => array(
+      'blocks' => array(
+        'menu_block-' . SMARTDOCS_MENU_BLOCK_DELTA => array(
+          'module' => 'menu_block',
+          'delta' => SMARTDOCS_MENU_BLOCK_DELTA,
+          'region' => 'sidebar_first',
+          'weight' => '-8',
+        ),
+      ),
+    ),
+    'theme_html' => array(
+      'class' => 'custom-docs-pages',
+    ),
+  );
+  $context->condition_mode = 0;
+  $items[$context->name] = $context;
+
+
+  // Arrange SmartDocs Response and Example blocks using context module
+  // Arrange SmartDocs Top Right Anchor block
+  $context2 = new stdClass();
+  $context2->disabled = FALSE; /* Edit this to true to make a default context disabled initially */
+  $context2->api_version = 3;
+  $context2->name = 'smartdocs_response';
+  $context2->description = '(Please do not override this)';
+  $context2->tag = '';
+  $context2->conditions = array(
+    'path' => array(
+      'values' => array(),
+    ),
+  );
+
+  // Includes both Response and Example blocks
+  $query = db_select('menu_links', 'ml');
+  $query->condition('menu_name', SMARTDOCS_PARENT_MENU);
+  $query->condition('hidden', 0);
+  $query->fields('ml', array('link_path'));
+  $result = $query->execute()->fetchCol();
+  foreach($result as $path){
+    // only apply to actual method pages
+    $alias = drupal_get_path_alias($path);
+    if (strpos($alias,'/apis/')) {
+      $context2->conditions['path']['values'][$alias] = $alias;
+    }
+  }
+
+  // construct Response Example block
+  $context2->reactions = array(
+    'block' => array(
+      'blocks' => array(
+        'block-amadeus-smartdocs-' . SMARTDOCS_RESPONSE_BLOCK_DELTA => array(
+          'module' => 'amadeus_smartdocs',
+          'delta' => SMARTDOCS_RESPONSE_BLOCK_DELTA,
+          'region' => 'content',
+          'weight' => '25',
+        ),
+        'block-amadeus-smartdocs-' . SMARTDOCS_TOP_RIGHT_DELTA => array(
+          'module' => 'amadeus_smartdocs',
+          'delta' => SMARTDOCS_TOP_RIGHT_DELTA,
+          'region' => 'sidebar_second',
+          'weight' => '20',
+        ),
+
+      ),
+    ),
+  );
+  $context2->condition_mode = 0;
+  $items[$context2->name] = $context2;
+
+  return $items;
+}
+
+/**
+ * Implements hook_ctools_plugin_api().
+ */
+function amadeus_smartdocs_ctools_plugin_api($module = NULL, $api = NULL) {
+  if ($module == "context" && $api == "context") {
+    return array("version" => "3");
+  }
+}
+
+
+/**
+ * Implements hook_menu_default_menu_custom().
+ */
+function amadeus_smartdocs_menu_default_menu_custom() {
+  $menus = array();
+
+  // Exported menu: menu-docs-left-side-menu.
+  $menus[SMARTDOCS_PARENT_MENU] = array(
+    'menu_name' => SMARTDOCS_PARENT_MENU,
+    'title' => 'Docs Left Side menu',
+    'description' => 'Docs Left Side Menu',
+  );
+  // Translatables
+  // Included for use with string extractors like potx.
+  t('Docs Left Side Menu');
+
+  return $menus;
+}
+
+/*
+ * Drupal SmartDocs Menu form
+ */
+function amadeus_smartdocs_generate_api_docs_urls() {
+  $query = db_select('smartdata', 's' );
+  $query->distinct();
+  $query->fields('s', array('model'));
+  $query->groupBy('s.model');
+  foreach($query->execute()->fetchAll() as $obj) {
+    $models[$obj->model] = $obj->model;
+  }
+
+  $question = "Are you sure you want to continue to generate smartdocs links on the left side menu ?";
+  $form = confirm_form(array(),$question, "admin/smartdocs");
+
+  $form['start']['pagepath'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('SmartDocs Menu Landing Page url path'),
+    '#description'   => t('Enter the SmarDocs menu landing page alias path. Usually it\'s a Basic page type with the aplias path of api-catalog, getting-started, or similar. <br> Create one if it doe not exist.'),
+    '#required'      => TRUE,
+    '#default_value' => variable_get('smartdocs-landing-page', 'api-catalog'),
+  );
+
+  if (variable_get('enable_smartdocs_accordion_menu', FALSE)) {
+    $default_menu = 'accordion';
+  }
+  else {
+    $default_menu = 'jquery';
+  }
+
+  $form['left_menu']['menu_types'] = array(
+    '#type' => 'radios',
+    '#options' => array('jquery' => t('Hover Dropdown layout'), 'accordion' => t('Accordion layout') ),
+    '#title' => t('Select menu type'),
+    '#default_value' => $default_menu,
+  );
+
+  $form['smardoc']['models'] = array(
+    '#type' => 'checkboxes',
+    '#options' => $models,
+    '#title' => t('Select SmartDocs models to generate menu for...'),
+  );
+
+  return $form;
+}
+
+
+/**
+ * Implements hook_form_validate()
+ *
+ * @param array $form
+ * @param array $form_state
+ */
+function amadeus_smartdocs_generate_api_docs_urls_validate(array $form, array &$form_state) {
+  if (!drupal_lookup_path('source', $form_state['input']['pagepath'])) {
+    form_set_error('pagepath', t('The url alias path %path is not found. Please enter a valid url path or create the node with the url path %path', array('%path' => $form_state['input']['pagepath'])));
+    return;
+  }
+}
+
+
+/**
+ *
+ *
+ * @param $form
+ * @param $form_state
+ */
+function amadeus_smartdocs_generate_api_docs_urls_submit($form, $form_state) {
+  // Set Menu type
+  if ($form_state['input']['menu_types'] == 'accordion') {
+    variable_set('enable_smartdocs_accordion_menu', TRUE);
+  }
+  else {
+    variable_set('enable_smartdocs_accordion_menu', FALSE);
+  }
+
+  // Save SmartDocs Landing page url
+  variable_set('smartdocs-landing-page', $form_state['input'][pagepath]);
+
+  //  Create Docs Left Side Menu if it doesn't exist
+  $menu_exist = db_select('menu_custom', 'm')
+    ->fields('m', array('menu_name'))
+    ->condition('m.menu_name', SMARTDOCS_PARENT_MENU)
+    ->execute()->fetchField();
+
+  if (!$menu_exist) {
+    $menu = array(
+      'menu_name' => SMARTDOCS_PARENT_MENU,
+      'title' => 'Docs',
+      'description' => 'Docs Left Side Menu',
+    );
+    menu_save($menu);
+  }
+
+  // Grab SmartDocs method paths info
+  $model_apis = _amadeus_smartdocs_api_url_cache($form_state['input']['models']);
+  $weight = 1;
+  $error_model = array();
+
+  if (count($model_apis) > 0) {
+
+    foreach ($model_apis as $model => $methods) {
+      drupal_set_message('------ Processing SmartDocs model -------> ' . $model);
+
+      // Create top level parent page and menu item
+      $plid = amadeus_smartdocs_create_landing_page($model);
+
+      if (!empty($error_model)) {
+        continue;
+      }
+
+      // Create All APIs menu link
+      $item = array(
+        'link_path' => $model . '/apis',
+        'link_title' => 'All APIs',
+        'menu_name' => SMARTDOCS_PARENT_MENU,
+        'weight' => $weight++,
+        'enabled' => TRUE,
+        'plid' => $plid,
+        'mlid' => '',
+      );
+      drupal_set_message(SMARTDOCS_PARENT_MENU . '--All APIs--' . $model . '/apis');
+      menu_link_save($item);
+
+      // Create Menu links
+      foreach ($methods as $nid => $apis) {
+        $_url = 'node/' . $nid;
+        $mlid = db_select('menu_links', 'a')
+          ->fields('a', array('mlid'))
+          ->condition('a.menu_name', SMARTDOCS_PARENT_MENU)
+          ->condition('a.link_path', $_url)
+          ->execute()->fetchField();
+
+        $item = array(
+          'link_path' => $_url,
+          'link_title' => $apis['title'],
+          'menu_name' => SMARTDOCS_PARENT_MENU,
+          'weight' => $weight++,
+          'enabled' => TRUE,
+          'plid' => $plid,
+          'mlid' => $mlid,
+        );
+
+        if ($mlid != 0) {
+          unset($item['weight']);
+        }
+
+        drupal_set_message(SMARTDOCS_PARENT_MENU . '--' . $apis['title'] . '--' . $_url);
+        menu_link_save($item);
+      }
+    }
+
+  }
+
+  if(!empty($error_model)){
+    drupal_set_message('Please create a menu item(s) with titles '. implode(', ', $error_model) ." and retry this process.", 'error');
+  } else{
+    // Delete Context block to reset
+    $query = db_delete('context')
+      ->condition('name', 'docs_page_context')
+      ->execute();
+
+    drupal_set_message('Finished Processing menu items.  Please flush all caches to ensure all menu settings take effect.');
+  }
+
+  drupal_flush_all_caches();
+}
+
+
+function _amadeus_smartdocs_api_url_cache($models = array()) {
+  $model_apis = NULL;
+
+  foreach($models as $model) {
+    $query = db_select('smartdata', 'a' );
+    $query->join('field_data_field_smart_method_verb', 'b',  'b.entity_id = a.nid'  );
+    $query->join('field_data_field_smart_method_resource_path', 'r',  'b.entity_id = r.entity_id'  );
+    $query->join('taxonomy_term_data','t', 't.tid = b.field_smart_method_verb_tid');
+    $query->join('node','n', 'n.nid = a.nid');
+    $query->fields('t', array('name'));
+    $query->fields('r', array('field_smart_method_resource_path_value'));
+    $query->fields('n', array('nid', 'title'));
+    $query->fields('a', array('mpid'));
+    $query->condition('a.model', $model);
+    $query->condition('n.status', 1);
+    $query->orderBy('r.field_smart_method_resource_path_value' , 'ASC');
+    $query->orderBy('t.name' , 'ASC');
+    foreach($query->execute()->fetchAll() as $obj) {
+      $model_apis[$model][$obj->nid] = array(
+        'method' => $obj->mpid,
+        'path' => $obj->{"field_smart_method_resource_path_value"},
+        'title' => $obj->title
+      );
+    }
+  }
+  return $model_apis;
+}
+
+/**
+ * Implements hook_block_info()
+ */
+function amadeus_smartdocs_block_info() {
+  $blocks['api_listing_by_product'] = array(
+    'info' => t('List Apis by Product'),
+    'cache' => DRUPAL_CACHE_PER_PAGE,
+  );
+  $blocks['block--smartdocs-response'] = array(
+    'info' => "Smartdocs Response",
+  );
+  $blocks['block--smartdocs-top-right'] = array(
+    'info' => "Smartdocs Top Right Anchor",
+  );
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view()
+ * Construct block content
+ *
+ */
+function amadeus_smartdocs_block_view($delta) {
+
+  $block = array('content'=>'');
+
+  switch($delta) {
+
+    case 'api_listing_by_product' :
+      $block = array('title' => '<none>');
+      $model_apis = _amadeus_smartdocs_api_url_cache();
+      foreach($model_apis as $product => $models) {
+        $apis_arr = array();
+        foreach($models as $model=>$apis){
+          foreach($apis as $nid=>$api_info){
+            $apis_arr[] = l( $api_info['path'] . ' ' . $api_info['method'], 'node/' . $nid);
+          }
+        }
+        $block['content'][$product] = array(
+          '#title' => $product,
+          '#theme' => 'item_list',
+          '#items' => $apis_arr,
+        );
+      }
+      break;
+
+    case 'block--smartdocs-response' :
+      // ensure this is a node
+      // Order by Title, it title starts with Example place last
+      if (arg(0) == 'node') {
+        $nid = intval( arg(1) );
+        $query = db_select('field_data_field_smartdocs_parent', 's' );
+        $query->join('field_data_body', 'b',  'b.entity_id = s.entity_id');
+        $query->join('node', 'n',  'b.entity_id = n.nid');
+        $query->fields('b', array('body_value'));
+        $query->fields('n', array('title'));
+        $query->condition('s.field_smartdocs_parent_target_id', $nid);
+
+        foreach($query->execute()->fetchAll() as $obj) {
+          // Place Example content last, checking the name of the page
+          if (strpos($obj->title, 'Example ') !== false) {
+            $block['content'] .= '<div id="sm-example-block">&nbsp</div>' . $obj->body_value;
+          }
+          else {
+            $block['content'] = '<div id="sm-respone-block">&nbsp;</div>' . $obj->body_value . $block['content'];
+          }
+        }
+        $block['subject'] = '';
+      }
+      break;
+
+      case 'block--smartdocs-top-right' :
+        //$block['content'] .= '<a href="#send-this-request-id">Try a request</a></br>';
+        $block['content'] .= '<a href="#method_content">Try a request</a></br>';
+        $block['content'] .= '<a href="#sm-respone-block">Response format</a></br>';
+        $block['content'] .= '<a href="#sm-example-block">Example</a></br>';
+        $block['subject'] = '';
+        break;
+  }
+
+  return $block;
+}
+
+/**
+ * Implements hook_preprocess_menu_link()
+ *
+ * @param $vars
+ */
+function amadeus_smartdocs_preprocess_menu_link(&$vars) {
+  $menu_name = SMARTDOCS_PARENT_MENU;
+  $element = &$vars['element'];
+  if($element['#original_link']['menu_name'] == $menu_name && empty($element['#localized_options']['attributes']['title'])){
+    $element['#localized_options']['attributes']['title'] = $element['#title'];
+    foreach(element_children($element['#below']) as $key){
+      $child = &$element['#below'][$key];
+      if(empty($child['#localized_options']['attributes']['title'])) {
+        $child['#localized_options']['attributes']['title'] = $child['#title'];
+      }
+    }
+  }
+}
+
+
+/**
+ * Implements hook_menu_block_blocks().
+ */
+function amadeus_smartdocs_menu_block_blocks() {
+  // The array key is the block delta used by menu block.
+  return array(
+    SMARTDOCS_MENU_BLOCK_DELTA  => array(
+      'menu_name'               => SMARTDOCS_PARENT_MENU,
+      'parent_mlid'             => 0,
+      'title_link'              => 0,
+      'admin_title'             => 'Left side bar for Docs page',
+      'level'                   => 1,
+      'follow'                  => '0',
+      'depth'                   => 0,
+      'expanded'                => 1,
+      'sort'                    => 0,
+    ),
+  );
+}
+
+
+/**
+ * Create SmartDoc model landing page and Parent menu item
+ *
+ * @param null $model_name
+ * @return string
+ * @throws Exception
+ */
+function amadeus_smartdocs_create_landing_page($model_name = NULL) {
+  $alias = strtolower($model_name);
+  $alias = str_replace(" ", "", $alias);
+  $alias = 'smartdocs-parent-menu-page-' . $alias;
+  $aliasExists = db_query('SELECT pid FROM {url_alias} WHERE alias = :alias', array(':alias' => $alias))->fetchField();
+
+  // Create blank page if it doesn't already exist.
+  if(!$aliasExists) {
+    $node = new stdClass();
+    $node->type = "page";
+    $node->title = 'SmartDocs Parent Menu Page - ' . $model_name;
+    $node->language = LANGUAGE_NONE;
+    $node->path = array('alias' => $alias);
+    node_object_prepare($node);
+    $node->uid = 1;
+
+    $node->status = 1;
+    $node->promote = 0;
+    $node->comment = 0;
+
+    // Let's add standard body field
+    $node->body[$node->language][0]['value'] = '<p>This is the landing page for SmartDocs model: <h3>' . $model_name . '</h3></p> <br><p>Edit as needed...</p> <br> <h3>Important, remember to flush all caches if you change this page title.</h3>';
+//    $node->body[$node->language][0]['summary'] = 'Here goes a summary';
+    $node->body[$node->language][0]['format'] = 'full_html';
+
+    $node = node_submit($node);
+    node_save($node);
+    $parent_link_path = 'node/' . $node->nid;
+  }
+  else {
+    $source = db_select('url_alias', 'a')
+      ->fields('a', array('source'))
+      ->condition('a.alias', $alias)
+      ->execute()->fetchField();
+    $parent_link_path = $source;
+  }
+
+  // Create retrieve parent menu link
+  $plid = db_select('menu_links', 'a')
+    ->fields('a', array('mlid'))
+    ->condition('a.menu_name', SMARTDOCS_PARENT_MENU)
+    ->condition('a.plid', 0)
+    ->condition('a.link_path', $parent_link_path)
+    ->execute()->fetchField();
+
+  if ($plid == 0) {
+    // Create Menu Item
+    $item = array(
+      'link_path' => $parent_link_path,
+      'link_title' => $model_name,
+      'menu_name' => SMARTDOCS_PARENT_MENU,
+      'weight' => 0,
+      'enabled' => TRUE,
+      'plid' => 0,
+      'module' => 'menu',
+    );
+    $plid = menu_link_save($item);
+  }
+
+  drupal_set_message(SMARTDOCS_PARENT_MENU . '--' . $alias . '--' . $parent_link_path);
+  return $plid;
+}
+
+
+/**
+ * Implements hook_node_view().
+ * Insert API secret key into SmartDocs page
+ *
+ * @param $node
+ * @param $view_mode
+ * @param $langcode
+ */
+function amadeus_smartdocs_node_view($node, $view_mode, $langcode) {
+
+  if ($node->type == 'smart_method') {
+    global $user;
+    if ($user->uid) {
+      $cid = __FUNCTION__ . ':' . $user->uid . ':api_key';
+      if ($cache = cache_get($cid)) {
+        $api_key = $cache->data;
+      }
+      else {
+        $app_entities = entity_load('developer_app', FALSE, array('mail' => $user->mail));
+        if (count($app_entities) == 0) {
+          $api_key = 'APP KEY IS REQUIRED';
+        }
+        else {
+          $current = reset($app_entities);
+          $api_key = $current->consumerKey;
+          cache_set($cid, $api_key);
+        }
+      }
+    }
+    else {
+      // if user is not logged in reset api_key
+      $api_key = 'log in to retrieve API key';
+    }
+
+    // Store API Key in Drupal settings
+    $options = array('type' => 'setting', 'cache' => true);
+    drupal_add_js(array('app_api_key' => $api_key), $options);
+
+    // Apply API Key to API Key field
+    $module_path = drupal_get_path('module', 'amadeus_smartdocs');
+    drupal_add_js("$module_path/js/amadeus_smartdocs.js");
+  }
+
+}
+
+/*
+ * Redirect menu item to a view path.
+ */
+function _amadeus_smartdocs_tis_view_redirect() {
+  drupal_goto('admin/config/smartdocs/tis-relationships');
+}

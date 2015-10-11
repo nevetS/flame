@@ -1,0 +1,5 @@
+name = Healthcare
+description = Custom module with event registration form
+core = 7.x
+
+dependencies[] = shortcode

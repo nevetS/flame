@@ -1,0 +1,13 @@
+<?php
+ function healthcare_init() {
+  if (is_array($_SESSION['messages'])) {
+    foreach($_SESSION['messages'] as $type => $messages) {
+      foreach($messages as $key=>$message) {
+		if ($type == "status" && 
+		strcasecmp($message, 'A welcome message with further instructions has been sent to your e-mail address.') ==0)
+			
+			$_SESSION['messages']['status'][$key] = 'A validation e-mail has been sent to your e-mail address. In order to gain full access to the site, you will need to follow the instructions in that message.';
+      }
+    }
+  }
+}
