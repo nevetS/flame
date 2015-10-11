@@ -5,14 +5,12 @@ Overview
 [Flame](https://github.com/apigee/flame#Flame-definition) is a Health care API Exposure solution based on Apigee Edge platform. API Exposure is the essential block of any digital ecosystem needs, let it be application, data analysis and contextual content delivery through APIs. 
 
 The key differences between flame and any traditional API Exposure solutions
+    * FHIR DSTU 2 API Compliant convering all 16 FHIR resources
+    * Complete OAUTH 2.0 support for B2B and B2C scenarios
+    * Developer Portal with API Documentation and Sandbox 
+    * It has in-built consent and identity management. Additionally pluggable to any identity system.
+    * OOTB API Analytics
 
-    •	FHIR API Compliant
-    •	Complete OAUTH 2.0 support for B2B and B2C scenarios
-    •   Developer Portal with API Sandbox 
-    •	It has in-built consent and identity management. Additionally pluggable to any identity system.
-    •   OOTB API Analytics
-
-     
 The Health API solution is built based upon the FHIR API Specification [https://www.hl7.org/fhir/index.html]
 
 
@@ -50,6 +48,7 @@ See [http://apigee.com/docs/api-services/content/deploying-proxies-ui] for API p
     * Apigee Edge - Developer Portal with Health care theme
     * FHIR API Documentation and Sandbox for easy understanding
     * App Gallery to promote App ecosystem of your API program
+See [http://apigee.com/docs/developer-services/content/what-developer-portal] for Apigee Developer Portal customisation
 
 Make your contributions to Flame
 --------------------------------
