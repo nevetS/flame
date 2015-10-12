@@ -1,0 +1,11 @@
+name = Amadeus SmartDocs Custom
+description = Provides API key insert and left hand navigation menus.
+core = 7.x
+package = amadeus
+version = 7.x-1.0
+project = Amadeus
+
+dependencies[] = menu_block
+dependencies[] = delete_menu_options
+dependencies[] = smartdocs
+dependencies[] = amadeus_smartdocs_tis_view

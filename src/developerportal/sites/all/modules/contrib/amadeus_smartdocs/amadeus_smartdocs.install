@@ -1,0 +1,52 @@
+<?php
+
+
+/**
+ * Implements hook_install().
+ */
+function amadeus_smartdocs_install() {
+
+  // Create default API Docs landing page
+  if (!drupal_valid_path('api-catalog', FALSE)) {
+    $node = new stdClass();
+    $node->type = "page";
+    $node->title = "API Catalog";
+    $node->language = LANGUAGE_NONE;
+    $node->path = array('alias' => 'api-catalog');
+    node_object_prepare($node);
+    $node->uid = 1;
+
+    $node->status = 1;
+    $node->promote = 0;
+    $node->comment = 0;
+
+    // Let's add standard body field
+    $node->body[$node->language][0]['value'] = '<p>Click on the SmartDocs --> SmartDocs Menu link Generation <br> in the top left section of the admin menu to attach SmartDocs links to this page.';
+    $node->body[$node->language][0]['summary'] = 'Here goes a summary';
+    $node->body[$node->language][0]['format'] = 'ull_html';
+
+    $node = node_submit($node);
+    node_save($node);
+
+    // Assign to Main Menu
+    $item = array(
+      'link_path' => 'node/' . $node->nid,
+      'link_title' => $node->title,
+      'menu_name' => 'main-menu',
+      'weight' => 0,
+      'language' => $node->language,
+      'plid' => 0,
+      'module' => 'menu',
+    );
+    menu_link_save($item);
+
+  }
+}
+
+
+/**
+* Implements hook_uninstall().
+*/
+function amadeus_smartdocs_uninstall() {
+  variable_del('enable_smartdocs_accordion_menu');
+}
