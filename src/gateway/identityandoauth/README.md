@@ -1,6 +1,6 @@
 Overview
 --------
-The identity and ouath solution for FHIR APIs is built upon [Grass] which is an **identity solution** based on Apigee Edge platform. 
+The identity and oauth solution for FHIR APIs is built upon [Grass] which is an **identity solution** based on Apigee Edge platform. 
 
 For more details on Grass Architecture and API Specification, please refer https://github.com/apigee/grass#grass-definition
 
