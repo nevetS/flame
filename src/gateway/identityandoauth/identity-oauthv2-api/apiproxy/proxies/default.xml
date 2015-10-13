@@ -26,8 +26,23 @@
                 </Step>
                 <Step>
                     <FaultRules/>
+                    <Condition>(request.formparam.scope = "patient/*.write") or (request.queryparam.scope = "patient/*.write")</Condition>
+                    <Name>AllowPatientWriteScopes</Name>
+                </Step>
+                <Step>
+                    <FaultRules/>
                     <Condition>(request.formparam.scope = "user/*.*") or (request.queryparam.scope = "user/*.*")</Condition>
                     <Name>AllowUserAllScopes</Name>
+                </Step>
+                <Step>
+                    <FaultRules/>
+                    <Condition>(request.formparam.scope = "user/*.read") or (request.queryparam.scope = "user/*.read")</Condition>
+                    <Name>AllowUserReadScopes</Name>
+                </Step>
+                <Step>
+                    <FaultRules/>
+                    <Condition>(request.formparam.scope = "user/*.write") or (request.queryparam.scope = "user/*.write")</Condition>
+                    <Name>AllowUserWriteScopes</Name>
                 </Step>
                 <Step>
                     <Name>ValidateRequest</Name>
@@ -112,8 +127,23 @@
                 </Step>
                 <Step>
                     <FaultRules/>
+                    <Condition>((request.queryparam.grant_type = "client_credentials") or (request.formparam.grant_type = "client_credentials"))and ((request.formparam.scope = "patient/*.write") or (request.queryparam.scope = "patient/*.write"))</Condition>
+                    <Name>AllowPatientWriteScopes</Name>
+                </Step>
+                <Step>
+                    <FaultRules/>
                     <Condition>((request.queryparam.grant_type = "client_credentials") or (request.formparam.grant_type = "client_credentials")) and ((request.formparam.scope = "user/*.*") or (request.queryparam.scope = "user/*.*"))</Condition>
                     <Name>AllowUserAllScopes</Name>
+                </Step>
+                <Step>
+                    <FaultRules/>
+                    <Condition>((request.queryparam.grant_type = "client_credentials") or (request.formparam.grant_type = "client_credentials")) and ((request.formparam.scope = "user/*.read") or (request.queryparam.scope = "user/*.read"))</Condition>
+                    <Name>AllowUserReadScopes</Name>
+                </Step>
+                <Step>
+                    <FaultRules/>
+                    <Condition>((request.queryparam.grant_type = "client_credentials") or (request.formparam.grant_type = "client_credentials")) and ((request.formparam.scope = "user/*.write") or (request.queryparam.scope = "user/*.write"))</Condition>
+                    <Name>AllowUserWriteScopes</Name>
                 </Step>
                 <Step>
                     <FaultRules/>
